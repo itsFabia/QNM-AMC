@@ -140,7 +140,7 @@ def _normalize_ohlc(df, ticker=None):
         if col is not None:
             out[k] = df[col]
 
-    if not out.get("adj_close") and not out.get("close"):
+    if "adj_close" not in out and "close" not in out:
         raise KeyError(f"{ticker or 'Asset'}: keine Adj/Close-Spalte gefunden in {list(df.columns)}")
 
     return pd.DataFrame(out)
