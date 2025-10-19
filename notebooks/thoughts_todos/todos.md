@@ -1,23 +1,27 @@
 # To-Do Liste (laufend)  
-**Stand:** 2025-10-19 – Cleaning abgeschlossen, Bias- und Modellphase offen  
+**Stand:** 2025-10-19 – Bias-Review abgeschlossen, Modellierung offen  
 
 ---
 
-## 4. **Bias-Review**  
-- Indexverteilung je `Ticker` (`value_counts`) zur Erkennung von Over-/Underrepresentation.  
-- Zeitlich rollende Cross-Validation statt zufälliger Splits verwenden.  
+## 5. **Modellphase (nächster Schritt)**  
+- Rolling/Expanding Window CV mit Purge & Embargo (5D).  
+- Trainingsstart ab **2021-01-01** für faire Vergleichbarkeit.  
+- Pro-Ticker Standardisierung (`log1p` + z-Score im Train-Split).  
+- Cold-Start-Policy für **ALC** und **AMRZ** (Score erst ab N ≥ 250).  
 
 ---
 
-## 5. **Erklärbarkeit & Monitoring**  
-- SHAP / Permutation Importance **vorbereiten** → Bias in Feature Importance sichtbar machen.  
-- Modellversionierung einführen (`model_v2_cleaned`).  
+## 6. **Erklärbarkeit & Monitoring**  
+- SHAP / Permutation Importance implementieren.  
+- Feature Drift & mean_shift_sigma je Fold tracken.  
+- Modellversionierung starten (`model_v2_bias_checked`).  
 
 ---
 
-## 6. **Dokumentation**  
-- Sanity Check Log V2 **nach Cleaning aktualisieren**.  
-- Bias-Notizen fortführen und im Repository dokumentieren.  
+## 7. **Dokumentation**  
+- Bias Review 2025-10-19 ins Repository aufnehmen (`reports/bias_review.md`).  
+- Fold-Report-Template ergänzen (Feature Drift, OOS-IR, Spearman).  
+- README um Pipeline-Übersicht erweitern (Clean → Bias → Model).  
 
 ---
 
@@ -43,7 +47,15 @@
 
 ---
 
+## **Bias-Review**  
+- 20 SMI-Titel geprüft, gleichverteilt (5 % je Ticker).  
+- Level-Bias erkannt (MktCap, Volume, DivYld).  
+- IPO-Effekt bei **ALC** & **AMRZ** hervorgehoben.  
+- Empfehlungen in To-Do integriert.  
+
+---
+
 ## **Dokumentation**  
-- `cleaning_log.md` erstellt und mit Methoden, Risiken und Ergebnissen ergänzt.  
+- `cleaning_log.md` aktualisiert (Methoden, Risiken, Ergebnisse).  
 - Heatmap (`corr_heatmap_after.png`) gespeichert.  
-- Pipeline-Status im Repository nachvollziehbar.  
+- Repository-Struktur nachvollziehbar (Clean → Bias → Model).  
