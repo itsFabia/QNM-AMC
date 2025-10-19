@@ -80,7 +80,8 @@ df = read_auto_csv(INPUT_FILE)
 # (du hattest die Warnung bereits gesehen).
 if "Date" not in df.columns:
     sys.exit("Spalte 'Date' fehlt. Ohne Date kein Zeitbezug – Skript wird beendet.")
-df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d", errors="coerce")
+df["Date"] = pd.to_datetime(df["Date"], format="%d.%m.%Y", errors="coerce")
+
 
 # Identifikatoren prüfen
 if "Ticker" not in df.columns:
