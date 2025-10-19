@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 # === 1. Daten einlesen ===
 # Prüft automatisch auf Semikolon oder Komma als Trenner
 try:
-    df = pd.read_csv("AMC_model_input.csv", sep=";", encoding="utf-8-sig")
+    df = pd.read_csv("../AMC_model_input.csv", sep=";", encoding="utf-8-sig")
     if df.shape[1] == 1:
-        df = pd.read_csv("AMC_model_input.csv")
+        df = pd.read_csv("../AMC_model_input.csv")
 except Exception as e:
     raise ValueError(f"Fehler beim Einlesen: {e}")
 
