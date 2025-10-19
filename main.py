@@ -77,8 +77,8 @@ def tidy_feature_name(ticker: str, field: str) -> str:
 
 # ---- Pfade (anpassen, falls nötig) ----------------------------------------
 
-stocks_long_path = r"stocks_long.csv"   # oder voller Pfad
-macro_long_path  = r"macro_long.csv"
+stocks_long_path = r"data/stocks_long.csv"  # oder voller Pfad
+macro_long_path  = r"data/macro_long.csv"
 
 # ---- Einlesen (Semikolon-fest) --------------------------------------------
 
