@@ -17,9 +17,6 @@ verfügbaren Kursdaten eine einfache Outperformance-Strategie bauen lässt:
 
 ## Verwendung
 
-```bash
-python outperformance_strategy.py
-```
 
 Der Standardlauf nutzt den Schweizer Leitindex SMI. Die zentralen Parameter
 (wie Lookback-Periode, Anzahl der Top-Aktien, Schwellenwert für Signale
