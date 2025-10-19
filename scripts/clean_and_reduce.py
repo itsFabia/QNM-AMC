@@ -54,7 +54,7 @@ MACRO_HINTS = [
 CORR_CUTOFF = 0.95
 
 # Rolling-Fenster für leichte Glättung nach FFill
-ROLL_WINDOW = 3  # konservativ
+ROLL_WINDOW = 5  # konservativ
 
 
 # --------------------------------
@@ -80,7 +80,7 @@ df = read_auto_csv(INPUT_FILE)
 # (du hattest die Warnung bereits gesehen).
 if "Date" not in df.columns:
     sys.exit("Spalte 'Date' fehlt. Ohne Date kein Zeitbezug – Skript wird beendet.")
-df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
+df["Date"] = pd.to_datetime(df["Date"], format="%Y-%m-%d", errors="coerce")
 
 # Identifikatoren prüfen
 if "Ticker" not in df.columns:
@@ -125,22 +125,24 @@ if macro_cols:
     for col in macro_cols:
         # Vorwärts auffüllen je Ticker
         df_sorted[col] = df_sorted.groupby("Ticker", observed=True)[col].ffill()
-        # und rückwärts, falls führende NaNs am Anfang (optional; kann man auskommentieren)
-        df_sorted[col] = df_sorted.groupby("Ticker", observed=True)[col].bfill()
         # leichte Glättung (rollend je Ticker)
-        df_sorted[col] = (
-            df_sorted.groupby("Ticker", observed=True)[col]
-            .transform(lambda s: s.rolling(ROLL_WINDOW, min_periods=1).mean())
+        df_sorted[col] = df_sorted.groupby("Ticker", observed=True)[col].transform(
+            lambda s: s.rolling(ROLL_WINDOW, min_periods=1).mean()
         )
 
-# Optional: Wenn du garantiert KEINE bfill willst, oben einfach die bfill-Zeile entfernen.
+    # Optional: Wenn du garantiert KEINE bfill willst, oben einfach die bfill-Zeile entfernen.
 
 
 # --------------------------------
 # 4) Outlier-Handling (Winsorizing)
 # --------------------------------
 # Warum: Extremwerte (>3 SD) verzerren viele ML-Modelle. Wir schneiden nur Features zu.
-winsor_cols = [c for c in feature_cols if c in df_sorted.columns]
+    WINSOR_PATTERNS = [r"__logdiff1$", r"__chgstd20$"]
+
+
+def is_winsor_target(col: str) -> bool:
+    return any(re.search(p, col) for p in WINSOR_PATTERNS)
+winsor_cols = [c for c in macro_cols if is_winsor_target(c)]
 
 def winsorize_series(s: pd.Series, sigma: float = 3.0) -> pd.Series:
     mu, sd = s.mean(), s.std()
@@ -290,12 +292,15 @@ report_lines.append("## Selbstkritik / Risiken")
 report_lines.append("- Imputing kann Bias erzeugen, wenn Makro-Reihen lange Lücken haben (Regime-Übergänge).")
 report_lines.append("- Korrelations-Drop ist heuristisch: kann nützliche, aber redundante Signale kappen.")
 report_lines.append("- Winsorizing glättet Schocks – gut für Stabilität, aber reduziert Extrem-Alpha.")
+report_lines.append("- Date-Parsen: **ISO %Y-%m-%d** (kein dayfirst).")
+report_lines.append("- Winsorizing: **±3 SD** nur auf Makro-Diff/Vol-Spalten (`__logdiff1`, `__chgstd20`).")
 report_lines.append("")
 report_lines.append("## Nächste Schritte")
 report_lines.append("1. Sanity-Check erneut laufen lassen (auf `*_reduced.csv`).")
 report_lines.append("2. Erste Baseline-Modelle (z. B. RandomForest/XGBoost) mit Walk-Forward testen.")
 report_lines.append("3. Erklärbarkeit: Permutation Importance/SHAP prüfen (Bias-Detektor).")
 report_lines.append("4. Versionslog im Projekt aktualisieren (`reports/sanity_check_log.md`).")
+
 
 REPORT_FILE.write_text("\n".join(report_lines), encoding="utf-8")
 

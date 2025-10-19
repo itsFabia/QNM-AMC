@@ -1,19 +1,20 @@
 # Cleaning Log – AMC_model_input.csv
-**Datum:** 2025-10-19 14:20  
+**Datum:** 2025-10-19 15:45  
 **Zeilen/Spalten (vorher):** 50,300 / 97  
 **Zeilen/Spalten (nachher):** 50,300 / 77  
 
 ## Struktur & Basis
-- Duplikate (Date+Ticker): **0**
+- Duplikate (Date+Ticker): **50280**
 - Date-Parsen: **dd.mm.yyyy** via `dayfirst=True` gesetzt.
 
 ## Missing Values
-- Fehlende Werte **vorher (gesamt):** 311,480
-- Fehlende Werte **nachher (gesamt):** 77,376
+- Fehlende Werte **vorher (gesamt):** 361,780
+- Fehlende Werte **nachher (gesamt):** 161,496
 
 ### Top-NaN-Spalten vorher (Anteil; grobe Orientierung)
 | Spalte | NaN-Anteil |
 |---|---|
+| Date | 1.000 |
 | EURR002W Index | Last Price__chgstd20 | 0.639 |
 | EURR002W Index | Last Price__logdiff1 | 0.636 |
 | GSWISS10 Index | Last Price__chgstd20 | 0.579 |
@@ -23,11 +24,10 @@
 | SZCPIYOY Index | Last Price__chgstd20 | 0.287 |
 | SZCPIYOY Index | Last Price__logdiff1 | 0.285 |
 | GSWISS20 Index | Last Price__chgstd20 | 0.275 |
-| GSWISS20 Index | Last Price__logdiff1 | 0.273 |
 
 ## Imputing & Glättung (Makro)
 - Makro-Felder (heuristisch erkannt): 56 Spalten.
-- Methode: **forward-fill pro Ticker** + **rolling mean (W=3)**.
+- Methode: **forward-fill pro Ticker** + **rolling mean (W=5)**.
 
 ## Outlier-Handling
 - Winsorizing auf **±3 SD** für Feature-Spalten (Targets unverändert).
@@ -48,6 +48,8 @@
 - Imputing kann Bias erzeugen, wenn Makro-Reihen lange Lücken haben (Regime-Übergänge).
 - Korrelations-Drop ist heuristisch: kann nützliche, aber redundante Signale kappen.
 - Winsorizing glättet Schocks – gut für Stabilität, aber reduziert Extrem-Alpha.
+- Date-Parsen: **ISO %Y-%m-%d** (kein dayfirst).
+- Winsorizing: **±3 SD** nur auf Makro-Diff/Vol-Spalten (`__logdiff1`, `__chgstd20`).
 
 ## Nächste Schritte
 1. Sanity-Check erneut laufen lassen (auf `*_reduced.csv`).
