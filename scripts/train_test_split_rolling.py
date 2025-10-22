@@ -1,3 +1,29 @@
+# -*- coding: utf-8 -*-
+"""
+Rolling/Expanding Window Cross-Validation mit Embargo
+=====================================================
+
+Ziele:
+- Zeitreihen-sichere Splits (kein Leakage) mit Embargo-Puffer.
+- Faire Startbasis (z. B. 2021-01-01) trotz später IPOs.
+- Saubere Validierung (Spalten, Cross-Section, Datumsbereich).
+- Cold-Start-Policy (Score erst ab N ≥ 250 im Train-Split).
+- Split-Logging inkl. Ticker-Verteilung und Export der Split-Indizes.
+
+CLI (Beispiel):
+    python train_test_split_rolling.py ^
+        --csv C:\Users\holze\PycharmProjects\QNM-AMC\data\AMC_model_input_reduced.csv ^
+        --start 2021-01-01 ^
+        --train-years 3 ^
+        --test-months 1 ^
+        --embargo-days 5 ^
+        --mode rolling ^
+        --date-col Date ^
+        --price-col Price ^
+        --out C:\Users\holze\PycharmProjects\QNM-AMC\reports\splits_log.csv ^
+        --min-train-days-per-ticker 250
+"""
+
 from __future__ import annotations
 import os
 import argparse

@@ -1,0 +1,6 @@
+# data & artefacts
+data/
+reports/
+*.parquet
+*.feather
+.ipynb_checkpoints/

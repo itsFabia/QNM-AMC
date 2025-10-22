@@ -1,0 +1,16 @@
+name: qnm-amc
+channels: [conda-forge, defaults]
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - scikit-learn
+  - lightgbm
+  - pyarrow
+  - polars
+  - scipy
+  - pyyaml
+  - tqdm
+  - pip
+  - pip:
+      - yfinance
