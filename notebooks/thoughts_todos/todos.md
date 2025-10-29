@@ -59,3 +59,20 @@
 - `cleaning_log.md` aktualisiert (Methoden, Risiken, Ergebnisse).  
 - Heatmap (`corr_heatmap_after.png`) gespeichert.  
 - Repository-Struktur nachvollziehbar (Clean → Bias → Model).  
+
+Normalisieren erledigt und jetzt dran Metriken auszuwählen udn Handelslogik einzufügen
+ind daten der letzten 10 Jahre okay oder ist das zu wenig zum testen/traininieren 
+Wie wird erwartet die Abgabe erwartet
+Backtesting auf vorhersagen der exesss forward und backtesting für Handelsstrategie
+
+Werner Ökonom prince of yen 
+shadow inflation 
+2027 Kriise
+Grafik der Trend
+Schiller Volatilität 
+Warrent Buffet Index sigma 2 -4 standardabew
+
+we
+
+goldkris std  200 tage mean sigm 3 schuller 
+Gostalani
