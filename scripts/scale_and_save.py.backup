@@ -42,13 +42,6 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--sep", default=None)
     p.add_argument("--encoding", default=None)
 
-    # Winsorizing & Feature Reduction (per-split, leakage-safe)
-    p.add_argument("--winsorize", action="store_true", help="Apply per-split winsorizing based on train stats")
-    p.add_argument("--winsorize-sigma", type=float, default=3.0, help="Winsorizing threshold in standard deviations")
-    p.add_argument("--winsorize-patterns", default="__logdiff1$,__chgstd20$", help="Regex patterns for columns to winsorize (comma-separated)")
-    p.add_argument("--reduce-features", action="store_true", help="Apply per-split feature reduction based on train correlations")
-    p.add_argument("--corr-threshold", type=float, default=0.95, help="Correlation threshold for feature reduction")
-
     return p.parse_args()
 
 
@@ -189,50 +182,6 @@ def force_shift_features_tminus1(df: pd.DataFrame, feature_cols: List[str], tick
     return df
 
 
-# ---------- Winsorizing (per-split, leakage-safe) ----------
-def compute_winsorize_bounds(train_df: pd.DataFrame, cols: List[str], sigma: float) -> Dict[str, Tuple[float, float]]:
-    """Compute winsorizing bounds from train data only."""
-    bounds = {}
-    for c in cols:
-        if c not in train_df.columns:
-            continue
-        s = train_df[c].dropna()
-        if s.empty or s.std() == 0:
-            continue
-        mu, sd = s.mean(), s.std()
-        bounds[c] = (mu - sigma * sd, mu + sigma * sd)
-    return bounds
-
-
-def apply_winsorize(df: pd.DataFrame, bounds: Dict[str, Tuple[float, float]]) -> pd.DataFrame:
-    """Apply winsorizing using pre-computed bounds."""
-    df = df.copy()
-    for c, (lower, upper) in bounds.items():
-        if c in df.columns:
-            df[c] = df[c].clip(lower=lower, upper=upper)
-    return df
-
-
-def get_winsorize_cols(feature_cols: List[str], patterns: List[str]) -> List[str]:
-    """Filter feature columns by regex patterns."""
-    if not patterns:
-        return []
-    return [c for c in feature_cols if any(re.search(p, c) for p in patterns if p)]
-
-
-# ---------- Feature Reduction (per-split, leakage-safe) ----------
-def compute_corr_drops(train_df: pd.DataFrame, feature_cols: List[str], threshold: float) -> List[str]:
-    """Identify features to drop based on train correlations only."""
-    valid_cols = [c for c in feature_cols if c in train_df.columns]
-    if len(valid_cols) < 2:
-        return []
-
-    corr = train_df[valid_cols].corr().abs()
-    upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
-    to_drop = [c for c in upper.columns if (upper[c] > threshold).any()]
-    return to_drop
-
-
 # ---------- Main ----------
 def main():
     args = parse_args()
@@ -310,35 +259,9 @@ def main():
         if args.target in df_test.columns:
             df_test = df_test.dropna(subset=[args.target])
 
-        # ===== LEAKAGE-SAFE: Winsorizing per-split (based on train stats only) =====
-        winsor_bounds = {}
-        winsorized_cols = []
-        if args.winsorize:
-            patterns = [p.strip() for p in args.winsorize_patterns.split(",") if p.strip()]
-            winsorized_cols = get_winsorize_cols(feature_cols, patterns)
-            if winsorized_cols:
-                winsor_bounds = compute_winsorize_bounds(df_train, winsorized_cols, args.winsorize_sigma)
-                df_train = apply_winsorize(df_train, winsor_bounds)
-                df_test = apply_winsorize(df_test, winsor_bounds)
-
-        # ===== LEAKAGE-SAFE: Feature Reduction per-split (based on train correlations only) =====
-        dropped_features = []
-        active_feature_cols = feature_cols.copy()
-        if args.reduce_features:
-            dropped_features = compute_corr_drops(df_train, feature_cols, args.corr_threshold)
-            if dropped_features:
-                active_feature_cols = [c for c in feature_cols if c not in dropped_features]
-                # Don't actually drop columns yet, just exclude from scaling
-
-        # Scaling with active features only
-        stats = compute_group_stats(df_train, args.ticker_col, active_feature_cols)
-        df_train_scaled = zscore_by_ticker(df_train, args.ticker_col, active_feature_cols, stats, args.impute_na)
-        df_test_scaled  = zscore_by_ticker(df_test,  args.ticker_col, active_feature_cols, stats, args.impute_na)
-
-        # Drop reduced features from final output
-        if dropped_features:
-            df_train_scaled = df_train_scaled.drop(columns=dropped_features, errors='ignore')
-            df_test_scaled = df_test_scaled.drop(columns=dropped_features, errors='ignore')
+        stats = compute_group_stats(df_train, args.ticker_col, feature_cols)
+        df_train_scaled = zscore_by_ticker(df_train, args.ticker_col, feature_cols, stats, args.impute_na)
+        df_test_scaled  = zscore_by_ticker(df_test,  args.ticker_col, feature_cols, stats, args.impute_na)
 
         out_train = os.path.join(args.outdir, f"scaled_train_{sid:03d}.parquet")
         out_test  = os.path.join(args.outdir, f"scaled_test_{sid:03d}.parquet")
@@ -359,18 +282,10 @@ def main():
             "n_train": len(df_train_scaled),
             "n_test": len(df_test_scaled),
             "features": feature_cols,
-            "active_features": active_feature_cols,
             "log1p_cols": log1p_cols,
             "impute_na": args.impute_na,
             "force_shift": bool(args.force_shift),
             "target": args.target,
-            "winsorize_enabled": args.winsorize,
-            "winsorize_sigma": args.winsorize_sigma if args.winsorize else None,
-            "winsorized_cols": winsorized_cols,
-            "winsor_bounds": {k: list(v) for k, v in winsor_bounds.items()} if winsor_bounds else {},
-            "reduce_features_enabled": args.reduce_features,
-            "corr_threshold": args.corr_threshold if args.reduce_features else None,
-            "dropped_features": dropped_features,
         }
         with open(os.path.join(args.outdir, f"meta_{sid:03d}.json"), "w", encoding="utf-8") as f:
             json.dump(meta, f, indent=2, ensure_ascii=False)

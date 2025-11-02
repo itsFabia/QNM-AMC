@@ -135,13 +135,42 @@ if macro_cols:
 
 
 # --------------------------------
-# 4) WICHTIG: Winsorizing und Feature-Reduktion wurden entfernt!
+# 4) Outlier-Handling (Winsorizing)
 # --------------------------------
-# Diese Operationen wurden nach scale_and_save.py verschoben, um Leakage zu vermeiden.
-# Begründung: Winsorizing und Feature-Reduktion müssen per-split durchgeführt werden,
-# basierend NUR auf Train-Daten, um Future Information Leakage zu verhindern.
+# Warum: Extremwerte (>3 SD) verzerren viele ML-Modelle. Wir schneiden nur Features zu.
+    WINSOR_PATTERNS = [r"__logdiff1$", r"__chgstd20$"]
 
-df_reduced = df_sorted.copy()
+
+def is_winsor_target(col: str) -> bool:
+    return any(re.search(p, col) for p in WINSOR_PATTERNS)
+winsor_cols = [c for c in macro_cols if is_winsor_target(c)]
+
+def winsorize_series(s: pd.Series, sigma: float = 3.0) -> pd.Series:
+    mu, sd = s.mean(), s.std()
+    if pd.isna(sd) or sd == 0:
+        return s  # konstante/degenerierte Spalte unangetastet
+    lower, upper = mu - sigma * sd, mu + sigma * sd
+    return s.clip(lower, upper)
+
+for col in winsor_cols:
+    df_sorted[col] = winsorize_series(df_sorted[col], sigma=3.0)
+
+
+# --------------------------------
+# 5) Feature-Reduktion (Korrelations-Drop)
+# --------------------------------
+# Warum: Multikollinearität bremst, macht Interpretationen instabil
+# und kann Overfitting fördern. Wir droppen Paare mit |corr| > 0.95.
+# Achtung: Korrelation nur über Feature-Spalten, Targets bleiben unberührt.
+numeric_after = df_sorted.select_dtypes(include=[np.number]).columns.tolist()
+feature_after = [c for c in numeric_after if c not in TARGET_COLS]
+
+corr = df_sorted[feature_after].corr().abs()
+upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+
+to_drop = [c for c in upper.columns if (upper[c] > CORR_CUTOFF).any()]
+
+df_reduced = df_sorted.drop(columns=to_drop, errors="ignore")
 
 
 # --------------------------------
@@ -185,10 +214,9 @@ heatmap_saved = save_heatmap(df_reduced, HEATMAP_PNG)
 # --------------------------------
 # 8) Dateien schreiben
 # --------------------------------
-# Hinweis: clean und reduced sind jetzt identisch, da Winsorizing/Feature-Reduktion
-# per-split in scale_and_save.py durchgeführt werden (Leakage-Vermeidung).
-df_reduced.to_csv(CLEAN_FILE, index=False)
-df_reduced.to_csv(REDUCED_FILE, index=False)  # Beide Files für Backward-Compatibility
+# Warum: Reproduzierbarkeit + klarer Trennschritt zwischen „clean“ und „reduced“.
+df_sorted.to_csv(CLEAN_FILE, index=False)
+df_reduced.to_csv(REDUCED_FILE, index=False)
 
 
 # --------------------------------
@@ -240,11 +268,16 @@ if macro_cols:
 else:
     report_lines.append("- Keine Makro-Felder anhand Namensheuristik erkannt – Imputing minimal angewandt.")
 report_lines.append("")
-report_lines.append("## Outlier-Handling & Feature-Reduktion")
-report_lines.append("- **WICHTIG**: Winsorizing und Feature-Reduktion wurden aus diesem Skript entfernt!")
-report_lines.append("- **Grund**: Future Information Leakage vermeiden.")
-report_lines.append("- **Neue Pipeline**: Beide Operationen werden jetzt per-split in `scale_and_save.py` durchgeführt,")
-report_lines.append("  basierend ausschließlich auf Train-Daten.")
+report_lines.append("## Outlier-Handling")
+report_lines.append("- Winsorizing auf **±3 SD** für Feature-Spalten (Targets unverändert).")
+report_lines.append("")
+report_lines.append("## Feature-Reduktion")
+report_lines.append(f"- Korrelationsschwelle: **>{CORR_CUTOFF:.2f}** (absolut).")
+report_lines.append(f"- Entfernte Features: **{len(to_drop)}**")
+if to_drop:
+    preview = ", ".join(to_drop[:12])
+    more = "" if len(to_drop) <= 12 else f" … (+{len(to_drop)-12} weitere)"
+    report_lines.append(f"  - Beispiele: {preview}{more}")
 report_lines.append("")
 report_lines.append("## Optional: Heatmap")
 if heatmap_saved:
@@ -253,15 +286,15 @@ else:
     report_lines.append("- Heatmap **nicht** gespeichert (seaborn nicht installiert). Optional: `python -m pip install seaborn`")
 report_lines.append("")
 report_lines.append("## Dateien (Outputs)")
-report_lines.append(f"- Clean (nur Imputing): `data/{CLEAN_FILE.name}`")
-report_lines.append(f"- Reduced (identisch zu Clean): `data/{REDUCED_FILE.name}`")
-report_lines.append("  - **Hinweis**: Beide Dateien sind jetzt identisch (Backward-Compatibility)")
+report_lines.append(f"- Clean (Imputing + Winsorizing): `data/{CLEAN_FILE.name}`")
+report_lines.append(f"- Reduced (zzgl. Feature-Drop): `data/{REDUCED_FILE.name}`")
 report_lines.append("")
 report_lines.append("## Selbstkritik / Risiken")
 report_lines.append("- Imputing kann Bias erzeugen, wenn Makro-Reihen lange Lücken haben (Regime-Übergänge).")
-report_lines.append("- Forward-Fill ist konservativ, aber kann bei strukturellen Breaks problematisch sein.")
-report_lines.append("- **UPDATE 2025**: Winsorizing/Feature-Reduktion wurden entfernt aus diesem Skript,")
-report_lines.append("  um Future Information Leakage zu verhindern (jetzt per-split in scale_and_save.py).")
+report_lines.append("- Korrelations-Drop ist heuristisch: kann nützliche, aber redundante Signale kappen.")
+report_lines.append("- Winsorizing glättet Schocks – gut für Stabilität, aber reduziert Extrem-Alpha.")
+report_lines.append("- Date-Parsen: **ISO %Y-%m-%d** (kein dayfirst).")
+report_lines.append("- Winsorizing: **±3 SD** nur auf Makro-Diff/Vol-Spalten (`__logdiff1`, `__chgstd20`).")
 report_lines.append("")
 report_lines.append("## Nächste Schritte")
 report_lines.append("1. Sanity-Check erneut laufen lassen (auf `*_reduced.csv`).")
