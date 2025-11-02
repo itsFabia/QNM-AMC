@@ -246,7 +246,7 @@ def fit_predict_ranker(Xtr, ytr, dates_tr, Xte, dates_te, group_tr, group_te, pa
         'n_estimators': params['estimators'], 'verbosity': -1,
         'seed': seed, 'feature_pre_filter': False, 'label_gain': label_gain,
     }
-    model = lgb.train(cfg, lgb_train, num_boost_round=params['estimators'], valid_sets=[lgb_test], verbose_eval=False)
+    model = lgb.train(cfg, lgb_train, num_boost_round=params['estimators'], valid_sets=[lgb_test])
     return model, model.predict(Xtr), model.predict(Xte)
 
 
@@ -417,7 +417,8 @@ def main():
     print(json.dumps(cons, indent=2, default=float))
 
     with open(args.outdir / 'run_config.json', 'w', encoding='utf-8') as f:
-        json.dump({'args': vars(args), 'notes': 'neu & robust'}, f, indent=2)
+        args_dict = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
+        json.dump({'args': args_dict, 'notes': 'neu & robust'}, f, indent=2)
 
 
 if __name__ == '__main__':

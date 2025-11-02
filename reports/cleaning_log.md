@@ -1,7 +1,7 @@
 # Cleaning Log – AMC_model_input.csv
-**Datum:** 2025-10-19 16:04  
+**Datum:** 2025-11-02 17:15  
 **Zeilen/Spalten (vorher):** 50,300 / 97  
-**Zeilen/Spalten (nachher):** 50,300 / 77  
+**Zeilen/Spalten (nachher):** 50,300 / 97  
 
 ## Struktur & Basis
 - Duplikate (Date+Ticker): **0**
@@ -9,7 +9,7 @@
 
 ## Missing Values
 - Fehlende Werte **vorher (gesamt):** 311,480
-- Fehlende Werte **nachher (gesamt):** 111,196
+- Fehlende Werte **nachher (gesamt):** 123,700
 
 ### Top-NaN-Spalten vorher (Anteil; grobe Orientierung)
 | Spalte | NaN-Anteil |
@@ -29,27 +29,25 @@
 - Makro-Felder (heuristisch erkannt): 56 Spalten.
 - Methode: **forward-fill pro Ticker** + **rolling mean (W=5)**.
 
-## Outlier-Handling
-- Winsorizing auf **±3 SD** für Feature-Spalten (Targets unverändert).
-
-## Feature-Reduktion
-- Korrelationsschwelle: **>0.95** (absolut).
-- Entfernte Features: **20**
-  - Beispiele: RealizedVol20_ann, DivYld12m_lag1, MktCap_lag1, CPURNSA Index | Last Price__lag5, DXY Curncy | Last Price__lag5, ECCPEMUY Index | Last Price__lag5, EURCHF Curncy | Last Price__lag5, EURR002W Index | Last Price__lag5, FDTR Index | Last Price__lag5, GDBR10 Index | Last Price__lag5, GSWISS10 Index | Last Price__lag5, GSWISS20 Index | Last Price__lag1 … (+8 weitere)
+## Outlier-Handling & Feature-Reduktion
+- **WICHTIG**: Winsorizing und Feature-Reduktion wurden aus diesem Skript entfernt!
+- **Grund**: Future Information Leakage vermeiden.
+- **Neue Pipeline**: Beide Operationen werden jetzt per-split in `scale_and_save.py` durchgeführt,
+  basierend ausschließlich auf Train-Daten.
 
 ## Optional: Heatmap
 - Korrelations-Heatmap gespeichert: `corr_heatmap_after.png`
 
 ## Dateien (Outputs)
-- Clean (Imputing + Winsorizing): `data/AMC_model_input_clean.csv`
-- Reduced (zzgl. Feature-Drop): `data/AMC_model_input_reduced.csv`
+- Clean (nur Imputing): `data/AMC_model_input_clean.csv`
+- Reduced (identisch zu Clean): `data/AMC_model_input_reduced.csv`
+  - **Hinweis**: Beide Dateien sind jetzt identisch (Backward-Compatibility)
 
 ## Selbstkritik / Risiken
 - Imputing kann Bias erzeugen, wenn Makro-Reihen lange Lücken haben (Regime-Übergänge).
-- Korrelations-Drop ist heuristisch: kann nützliche, aber redundante Signale kappen.
-- Winsorizing glättet Schocks – gut für Stabilität, aber reduziert Extrem-Alpha.
-- Date-Parsen: **ISO %Y-%m-%d** (kein dayfirst).
-- Winsorizing: **±3 SD** nur auf Makro-Diff/Vol-Spalten (`__logdiff1`, `__chgstd20`).
+- Forward-Fill ist konservativ, aber kann bei strukturellen Breaks problematisch sein.
+- **UPDATE 2025**: Winsorizing/Feature-Reduktion wurden entfernt aus diesem Skript,
+  um Future Information Leakage zu verhindern (jetzt per-split in scale_and_save.py).
 
 ## Nächste Schritte
 1. Sanity-Check erneut laufen lassen (auf `*_reduced.csv`).

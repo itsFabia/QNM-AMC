@@ -88,8 +88,13 @@ def make_rid(df: pd.DataFrame, date_col: str, ticker_col: str) -> np.ndarray:
 
 
 def auto_feature_cols(df: pd.DataFrame, date_col: str, ticker_col: str, target: str) -> List[str]:
+    # Exclude IDs, target, AND forward-looking columns (leakage prevention)
     excl = {date_col, ticker_col, target}
-    return [c for c in df.columns if c not in excl and pd.api.types.is_numeric_dtype(df[c])]
+    # Also exclude any column with "_fwd" suffix (forward returns)
+    return [c for c in df.columns
+            if c not in excl
+            and pd.api.types.is_numeric_dtype(df[c])
+            and not c.endswith('_fwd')]
 
 
 def filter_features_by_regex(cols: List[str], exclude_patterns: List[str]) -> List[str]:
@@ -339,6 +344,12 @@ def main():
         if dropped_features:
             df_train_scaled = df_train_scaled.drop(columns=dropped_features, errors='ignore')
             df_test_scaled = df_test_scaled.drop(columns=dropped_features, errors='ignore')
+
+        # CRITICAL: Only keep columns that are in active_features + IDs + target
+        # This prevents leakage from forward-looking columns still present in the dataframe
+        keep_cols = [args.date_col, args.ticker_col, args.target] + active_feature_cols
+        df_train_scaled = df_train_scaled[[c for c in keep_cols if c in df_train_scaled.columns]]
+        df_test_scaled = df_test_scaled[[c for c in keep_cols if c in df_test_scaled.columns]]
 
         out_train = os.path.join(args.outdir, f"scaled_train_{sid:03d}.parquet")
         out_test  = os.path.join(args.outdir, f"scaled_test_{sid:03d}.parquet")

@@ -22,9 +22,7 @@
     "Volume_to_MA20",
     "DivYld12m_lag1",
     "MktCap_lag1",
-    "Ret_5d_fwd",
     "Bench_Return_raw",
-    "Bench_Ret_5d_fwd",
     "Excess_ret",
     "Rank_MA20",
     "Rank_LowVol20",
@@ -98,43 +96,282 @@
     "XBTUSD Curncy | Last Price__logdiff1",
     "XBTUSD Curncy | Last Price__chgstd20"
   ],
-  "log1p_cols": [
-    "CPURNSA Index | Last Price__chgstd20",
-    "DXY Curncy | Last Price__chgstd20",
-    "ECCPEMUY Index | Last Price__chgstd20",
-    "EURCHF Curncy | Last Price__chgstd20",
-    "EURR002W Index | Last Price__chgstd20",
-    "EURR002W Index | Last Price__lag1",
-    "EURR002W Index | Last Price__lag5",
-    "FDTR Index | Last Price__chgstd20",
-    "GDBR10 Index | Last Price__chgstd20",
-    "GSWISS10 Index | Last Price__chgstd20",
-    "GSWISS20 Index | Last Price__chgstd20",
-    "MOVE Index | Last Price__chgstd20",
-    "MktCap",
-    "MktCap_lag1",
+  "active_features": [
     "Price",
-    "RealizedVol20_ann",
-    "Return_STD10",
-    "Return_STD20",
-    "Return_STD5",
-    "SZCPIYOY Index | Last Price__chgstd20",
-    "USDCHF Curncy | Last Price__chgstd20",
-    "USGG10YR Index | Last Price__chgstd20",
-    "VIX Index | Last Price__chgstd20",
-    "VIX Index | Last Price__lag1",
-    "VIX Index | Last Price__lag5",
-    "VSMIX US Equity | Last Price__chgstd20",
     "Volume",
+    "DivYld12m",
+    "MktCap",
+    "Return_raw",
+    "Return_lag1",
+    "Return_lag5",
+    "Return_MA5",
+    "Return_STD5",
+    "Return_MA10",
+    "Return_STD10",
+    "Return_MA20",
+    "Return_STD20",
+    "Return_Z20",
     "Volume_MA20",
     "Volume_to_MA20",
-    "XAU Curncy | Last Price__chgstd20",
+    "Bench_Return_raw",
+    "Excess_ret",
+    "Rank_MA20",
+    "Rank_LowVol20",
+    "Rank_Liquidity",
+    "CPURNSA Index | Last Price__lag1",
+    "CPURNSA Index | Last Price__logdiff1",
+    "CPURNSA Index | Last Price__chgstd20",
+    "DXY Curncy | Last Price__lag1",
+    "DXY Curncy | Last Price__logdiff1",
+    "DXY Curncy | Last Price__chgstd20",
+    "ECCPEMUY Index | Last Price__logdiff1",
+    "ECCPEMUY Index | Last Price__chgstd20",
+    "EURCHF Curncy | Last Price__lag1",
+    "EURCHF Curncy | Last Price__logdiff1",
+    "EURCHF Curncy | Last Price__chgstd20",
+    "EURR002W Index | Last Price__lag1",
+    "EURR002W Index | Last Price__logdiff1",
+    "EURR002W Index | Last Price__chgstd20",
+    "FDTR Index | Last Price__lag1",
+    "FDTR Index | Last Price__logdiff1",
+    "FDTR Index | Last Price__chgstd20",
+    "GDBR10 Index | Last Price__lag1",
+    "GDBR10 Index | Last Price__logdiff1",
+    "GDBR10 Index | Last Price__chgstd20",
+    "GSWISS10 Index | Last Price__logdiff1",
+    "GSWISS20 Index | Last Price__logdiff1",
+    "GSWISS20 Index | Last Price__chgstd20",
+    "MOVE Index | Last Price__lag1",
+    "MOVE Index | Last Price__logdiff1",
+    "MOVE Index | Last Price__chgstd20",
+    "SZCPIYOY Index | Last Price__logdiff1",
+    "SZCPIYOY Index | Last Price__chgstd20",
+    "USDCHF Curncy | Last Price__lag1",
+    "USDCHF Curncy | Last Price__logdiff1",
+    "USDCHF Curncy | Last Price__chgstd20",
+    "USGG10YR Index | Last Price__lag1",
+    "USGG10YR Index | Last Price__logdiff1",
+    "USGG10YR Index | Last Price__chgstd20",
+    "VIX Index | Last Price__lag1",
+    "VIX Index | Last Price__lag5",
+    "VIX Index | Last Price__logdiff1",
+    "VIX Index | Last Price__chgstd20",
+    "VSMIX US Equity | Last Price__lag1",
+    "VSMIX US Equity | Last Price__logdiff1",
+    "VSMIX US Equity | Last Price__chgstd20",
     "XAU Curncy | Last Price__lag1",
-    "XAU Curncy | Last Price__lag5",
+    "XAU Curncy | Last Price__logdiff1",
+    "XAU Curncy | Last Price__chgstd20",
     "XBTUSD Curncy | Last Price__lag1",
-    "XBTUSD Curncy | Last Price__lag5"
+    "XBTUSD Curncy | Last Price__logdiff1",
+    "XBTUSD Curncy | Last Price__chgstd20"
   ],
-  "impute_na": 0.0,
-  "force_shift": true,
-  "target": "Excess_5d_fwd"
+  "log1p_cols": [],
+  "impute_na": null,
+  "force_shift": false,
+  "target": "Excess_5d_fwd",
+  "winsorize_enabled": true,
+  "winsorize_sigma": 3.0,
+  "winsorized_cols": [
+    "CPURNSA Index | Last Price__logdiff1",
+    "CPURNSA Index | Last Price__chgstd20",
+    "DXY Curncy | Last Price__logdiff1",
+    "DXY Curncy | Last Price__chgstd20",
+    "ECCPEMUY Index | Last Price__logdiff1",
+    "ECCPEMUY Index | Last Price__chgstd20",
+    "EURCHF Curncy | Last Price__logdiff1",
+    "EURCHF Curncy | Last Price__chgstd20",
+    "EURR002W Index | Last Price__logdiff1",
+    "EURR002W Index | Last Price__chgstd20",
+    "FDTR Index | Last Price__logdiff1",
+    "FDTR Index | Last Price__chgstd20",
+    "GDBR10 Index | Last Price__logdiff1",
+    "GDBR10 Index | Last Price__chgstd20",
+    "GSWISS10 Index | Last Price__logdiff1",
+    "GSWISS10 Index | Last Price__chgstd20",
+    "GSWISS20 Index | Last Price__logdiff1",
+    "GSWISS20 Index | Last Price__chgstd20",
+    "MOVE Index | Last Price__logdiff1",
+    "MOVE Index | Last Price__chgstd20",
+    "SZCPIYOY Index | Last Price__logdiff1",
+    "SZCPIYOY Index | Last Price__chgstd20",
+    "USDCHF Curncy | Last Price__logdiff1",
+    "USDCHF Curncy | Last Price__chgstd20",
+    "USGG10YR Index | Last Price__logdiff1",
+    "USGG10YR Index | Last Price__chgstd20",
+    "VIX Index | Last Price__logdiff1",
+    "VIX Index | Last Price__chgstd20",
+    "VSMIX US Equity | Last Price__logdiff1",
+    "VSMIX US Equity | Last Price__chgstd20",
+    "XAU Curncy | Last Price__logdiff1",
+    "XAU Curncy | Last Price__chgstd20",
+    "XBTUSD Curncy | Last Price__logdiff1",
+    "XBTUSD Curncy | Last Price__chgstd20"
+  ],
+  "winsor_bounds": {
+    "CPURNSA Index | Last Price__logdiff1": [
+      -0.0014328163470812584,
+      0.0018084109475967173
+    ],
+    "CPURNSA Index | Last Price__chgstd20": [
+      -0.00136924877082081,
+      0.003254909711542444
+    ],
+    "DXY Curncy | Last Price__logdiff1": [
+      -0.005919833703343206,
+      0.006245627250765785
+    ],
+    "DXY Curncy | Last Price__chgstd20": [
+      -0.0007347433201694304,
+      0.008381996686148776
+    ],
+    "ECCPEMUY Index | Last Price__logdiff1": [
+      -0.09806595397443008,
+      0.1018845223713373
+    ],
+    "ECCPEMUY Index | Last Price__chgstd20": [
+      -0.1317062806163299,
+      0.2163379721292165
+    ],
+    "EURCHF Curncy | Last Price__logdiff1": [
+      -0.004425273474537608,
+      0.0041752632900015135
+    ],
+    "EURCHF Curncy | Last Price__chgstd20": [
+      -0.0010642800413745864,
+      0.006856216925910636
+    ],
+    "EURR002W Index | Last Price__logdiff1": [
+      -0.042808785581230926,
+      0.045170359632777324
+    ],
+    "EURR002W Index | Last Price__chgstd20": [
+      -0.08580754135501882,
+      0.0961014039838848
+    ],
+    "FDTR Index | Last Price__logdiff1": [
+      -0.09796238104915944,
+      0.09921368985328316
+    ],
+    "FDTR Index | Last Price__chgstd20": [
+      -0.1663208423016447,
+      0.2174517631160777
+    ],
+    "GDBR10 Index | Last Price__logdiff1": [
+      -2.924502431856536,
+      0.7554771326848868
+    ],
+    "GDBR10 Index | Last Price__chgstd20": [
+      -0.22644261476494165,
+      1.5350668961139113
+    ],
+    "GSWISS10 Index | Last Price__logdiff1": [
+      -3.3314701595782052,
+      0.955711605196246
+    ],
+    "GSWISS10 Index | Last Price__chgstd20": [
+      -0.3216289987525691,
+      1.9242321926742192
+    ],
+    "GSWISS20 Index | Last Price__logdiff1": [
+      -2.410831724858623,
+      1.4276434498431592
+    ],
+    "GSWISS20 Index | Last Price__chgstd20": [
+      -0.17019138975585058,
+      0.8240077003017268
+    ],
+    "MOVE Index | Last Price__logdiff1": [
+      -0.06762475867432224,
+      0.06925898431246655
+    ],
+    "MOVE Index | Last Price__chgstd20": [
+      -0.01062772639740385,
+      0.11157410905977495
+    ],
+    "SZCPIYOY Index | Last Price__logdiff1": [
+      -0.06749468940578288,
+      0.07084335689031895
+    ],
+    "SZCPIYOY Index | Last Price__chgstd20": [
+      -0.11173079203948877,
+      0.152210937493097
+    ],
+    "USDCHF Curncy | Last Price__logdiff1": [
+      -0.013876702370406602,
+      0.013887344421952993
+    ],
+    "USDCHF Curncy | Last Price__chgstd20": [
+      0.00013494806499993704,
+      0.008443960803556765
+    ],
+    "USGG10YR Index | Last Price__logdiff1": [
+      -0.05305572373559709,
+      0.05538314123198892
+    ],
+    "USGG10YR Index | Last Price__chgstd20": [
+      -0.046693625514138026,
+      0.12282363700279778
+    ],
+    "VIX Index | Last Price__logdiff1": [
+      -0.09846420787854632,
+      0.10002655154916479
+    ],
+    "VIX Index | Last Price__chgstd20": [
+      -0.00999671350470363,
+      0.16241650196759022
+    ],
+    "VSMIX US Equity | Last Price__logdiff1": [
+      -0.03274348318909578,
+      0.033492199077755656
+    ],
+    "VSMIX US Equity | Last Price__chgstd20": [
+      -0.018274888194845774,
+      0.05775939110103131
+    ],
+    "XAU Curncy | Last Price__logdiff1": [
+      -0.02959849227532806,
+      0.02985422702532806
+    ],
+    "XAU Curncy | Last Price__chgstd20": [
+      -0.001065897176723566,
+      0.01923617941125965
+    ],
+    "XBTUSD Curncy | Last Price__logdiff1": [
+      -0.12871203510178209,
+      0.1310783194445656
+    ],
+    "XBTUSD Curncy | Last Price__chgstd20": [
+      -0.0033383883160672673,
+      0.08251364642689202
+    ]
+  },
+  "reduce_features_enabled": true,
+  "corr_threshold": 0.95,
+  "dropped_features": [
+    "RealizedVol20_ann",
+    "DivYld12m_lag1",
+    "MktCap_lag1",
+    "CPURNSA Index | Last Price__lag5",
+    "DXY Curncy | Last Price__lag5",
+    "ECCPEMUY Index | Last Price__lag1",
+    "ECCPEMUY Index | Last Price__lag5",
+    "EURCHF Curncy | Last Price__lag5",
+    "EURR002W Index | Last Price__lag5",
+    "FDTR Index | Last Price__lag5",
+    "GDBR10 Index | Last Price__lag5",
+    "GSWISS10 Index | Last Price__lag1",
+    "GSWISS10 Index | Last Price__lag5",
+    "GSWISS10 Index | Last Price__chgstd20",
+    "GSWISS20 Index | Last Price__lag1",
+    "GSWISS20 Index | Last Price__lag5",
+    "MOVE Index | Last Price__lag5",
+    "SZCPIYOY Index | Last Price__lag1",
+    "SZCPIYOY Index | Last Price__lag5",
+    "USDCHF Curncy | Last Price__lag5",
+    "USGG10YR Index | Last Price__lag5",
+    "VSMIX US Equity | Last Price__lag5",
+    "XAU Curncy | Last Price__lag5",
+    "XBTUSD Curncy | Last Price__lag5"
+  ]
 }
