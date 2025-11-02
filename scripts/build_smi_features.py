@@ -38,6 +38,9 @@ def engineer_equity_features(eq_df: pd.DataFrame, date_col: str) -> pd.DataFrame
 
     def past_only(g: pd.DataFrame) -> pd.DataFrame:
         r = g["Return_raw"]
+        p = g["Price"]
+
+        # === BASIC MOMENTUM & VOLATILITY ===
         # Lags
         g["Return_lag1"] = r.shift(1)
         g["Return_lag5"] = r.shift(5)
@@ -57,12 +60,66 @@ def engineer_equity_features(eq_df: pd.DataFrame, date_col: str) -> pd.DataFrame
         std20 = r.rolling(20, min_periods=10).std(ddof=0)
         g["Return_Z20"] = ((r - mu20) / std20).shift(1)
 
-        # Liquidity
+        # === NEUE FEATURES: MULTI-TIMEFRAME MOMENTUM ===
+        # Cumulative returns über verschiedene Perioden
+        for period, name in [(21, "1M"), (63, "3M"), (126, "6M")]:
+            cum_ret = (1 + r).rolling(period, min_periods=period//2).apply(lambda x: x.prod() - 1, raw=True)
+            g[f"Return_{name}"] = cum_ret.shift(1)
+
+        # === NEUE FEATURES: MEAN REVERSION ===
+        # Distance to Moving Averages (normalized by volatility)
+        for w in [10, 20, 60]:
+            ma = p.rolling(w, min_periods=w//2).mean()
+            distance = ((p - ma) / ma).shift(1)  # % distance
+            g[f"DistMA{w}"] = distance
+
+        # RSI-like: Up vs Down momentum (20-day)
+        up = r.clip(lower=0).rolling(20, min_periods=10).sum()
+        down = (-r.clip(upper=0)).rolling(20, min_periods=10).sum()
+        rsi = 100 * up / (up + down + 1e-10)
+        g["RSI20"] = rsi.shift(1)
+
+        # === NEUE FEATURES: TREND CONSISTENCY ===
+        # % of positive returns in last N days
+        for w in [10, 20]:
+            pct_positive = (r > 0).rolling(w, min_periods=w//2).mean()
+            g[f"PctPos{w}d"] = pct_positive.shift(1)
+
+        # === NEUE FEATURES: MOMENTUM ACCELERATION ===
+        # Change in momentum (2nd derivative)
+        ma10 = r.rolling(10, min_periods=5).mean()
+        ma20 = r.rolling(20, min_periods=10).mean()
+        mom_accel = (ma10 - ma20).shift(1)
+        g["MomAccel"] = mom_accel
+
+        # === NEUE FEATURES: VOLATILITY-ADJUSTED RETURNS ===
+        vol_adj_ret = (r / (r.rolling(20, min_periods=10).std(ddof=0) + 1e-10)).shift(1)
+        g["VolAdjRet20"] = vol_adj_ret
+
+        # === NEUE FEATURES: VOLATILITY REGIME ===
+        # Volatility-of-Volatility
+        vol = r.rolling(20, min_periods=10).std(ddof=0)
+        vol_of_vol = vol.rolling(20, min_periods=10).std(ddof=0).shift(1)
+        g["VolOfVol"] = vol_of_vol
+
+        # === LIQUIDITY ===
         if "Volume" in g.columns:
             g["Volume_MA20"]   = g["Volume"].rolling(20, min_periods=10).mean().shift(1)
             g["Volume_to_MA20"] = (g["Volume"] / g["Volume_MA20"]).shift(1)
 
-        # Fundamentals als Level -> nur laggen
+            # NEUE: Price-Volume Correlation (Momentum quality)
+            corr_window = 20
+            pv_corr = r.rolling(corr_window, min_periods=corr_window//2).corr(
+                g["Volume"].pct_change()
+            ).shift(1)
+            g["PriceVol_Corr"] = pv_corr
+
+            # NEUE: Volume Trend
+            vol_ma10 = g["Volume"].rolling(10, min_periods=5).mean()
+            vol_ma20 = g["Volume"].rolling(20, min_periods=10).mean()
+            g["VolTrend"] = (vol_ma10 / vol_ma20).shift(1)
+
+        # === FUNDAMENTALS ===
         if "DivYld12m" in g.columns:
             g["DivYld12m_lag1"] = g["DivYld12m"].shift(1)
         if "MktCap" in g.columns:
@@ -80,10 +137,36 @@ def add_cross_sectional_ranks(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     def rankit(col, name, ascending):
         if col in df.columns:
             df[name] = df.groupby(date_col)[col].rank(method="average", ascending=ascending, pct=True)
+
+    # === BESTEHENDE RANKINGS ===
     rankit("Return_MA20", "Rank_MA20", ascending=False)     # hohes Momentum besser
     rankit("Return_STD20", "Rank_LowVol20", ascending=True) # niedrige Vol besser
     if "Volume_MA20" in df.columns:
         rankit("Volume_MA20", "Rank_Liquidity", ascending=False)
+
+    # === NEUE RANKINGS: MULTI-TIMEFRAME MOMENTUM ===
+    rankit("Return_1M", "Rank_Mom1M", ascending=False)
+    rankit("Return_3M", "Rank_Mom3M", ascending=False)
+    rankit("Return_6M", "Rank_Mom6M", ascending=False)
+
+    # === NEUE RANKINGS: MEAN REVERSION ===
+    rankit("RSI20", "Rank_RSI", ascending=False)  # hoher RSI = overbought
+    rankit("DistMA20", "Rank_DistMA20", ascending=False)  # weit über MA = momentum
+
+    # === NEUE RANKINGS: VOLATILITY-ADJUSTED ===
+    rankit("VolAdjRet20", "Rank_VolAdjRet", ascending=False)  # höhere risk-adj returns besser
+
+    # === NEUE RANKINGS: TREND CONSISTENCY ===
+    rankit("PctPos20d", "Rank_TrendConsistency", ascending=False)
+
+    # === NEUE: CROSS-SECTIONAL SPREADS ===
+    # Distance from cross-sectional mean
+    for feat in ["Return_1M", "Return_3M", "VolAdjRet20", "RSI20"]:
+        if feat in df.columns:
+            cs_mean = df.groupby(date_col)[feat].transform("mean")
+            cs_std = df.groupby(date_col)[feat].transform("std")
+            df[f"{feat}_CSSpread"] = (df[feat] - cs_mean) / (cs_std + 1e-10)
+
     return df
 
 def build_macro_features(wide: pd.DataFrame, date_col: str, bench_price_col: str|None) -> pd.DataFrame:

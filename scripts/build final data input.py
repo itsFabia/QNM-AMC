@@ -6,10 +6,10 @@ import re
 # -----------------------------------------
 # Pfade & Parameter
 # -----------------------------------------
-STOCKS_PATH = Path("../data/stocks_long.csv")     # Ticker, Field, Date, Value
-MACRO_PATH  = Path("../data/macro_long.csv")      # Field, Date, Value
-SMI_PATH    = Path("../data/SMI data.csv")        # optional für SMI_Return
-OUT_PATH    = Path("qnm_step5_SMI_5d_modelinput.csv")
+STOCKS_PATH = Path("data/stocks_long.csv")     # Ticker, Field, Date, Value
+MACRO_PATH  = Path("data/macro_long.csv")      # Field, Date, Value
+SMI_PATH    = Path("data/SMI data.csv")        # optional für SMI_Return
+OUT_PATH    = Path("data/AMC_model_input.csv")
 
 ROLL_WINDOWS   = [5, 10, 20]
 MACRO_LAGS     = [1, 5]

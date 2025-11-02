@@ -76,11 +76,19 @@ if not INPUT_FILE.exists():
 
 df = read_auto_csv(INPUT_FILE)
 
-# Datum explizit als dd.mm.yyyy parsen, um Warnungen/Fehlzuordnungen zu vermeiden
-# (du hattest die Warnung bereits gesehen).
+# Datum flexibel parsen (verschiedene Formate unterstützen)
 if "Date" not in df.columns:
     sys.exit("Spalte 'Date' fehlt. Ohne Date kein Zeitbezug – Skript wird beendet.")
+
+# Backup original Date format
+date_orig = df["Date"].copy()
+
+# Try parsing with different formats
 df["Date"] = pd.to_datetime(df["Date"], format="%d.%m.%Y", errors="coerce")
+if df["Date"].isna().all():  # If all failed, try ISO format
+    df["Date"] = pd.to_datetime(date_orig, format="%Y-%m-%d", errors="coerce")
+if df["Date"].isna().all():  # If still all failed, try infer
+    df["Date"] = pd.to_datetime(date_orig, errors="coerce", dayfirst=True)
 
 
 # Identifikatoren prüfen

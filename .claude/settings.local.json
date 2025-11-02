@@ -1,12 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/scale_and_save.py --csv data/AMC_model_input_reduced.csv --splits-log reports/splits_log.csv --outdir reports/scaled --target Excess_5d_fwd --winsorize --winsorize-sigma 3.0 --winsorize-patterns \"__logdiff1$,__chgstd20$\" --reduce-features --corr-threshold 0.95)",
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/model_eval_lgbm.py --parquet-dir reports/scaled --target Excess_5d_fwd --outdir reports/eval --ranker --topk 10 --cost-bps 10.0)",
-      "Bash(conda run:*)",
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/check_features.py)",
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/compare_metrics.py)",
-      "Bash(dir:*)"
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python -c \"import pandas as pd; df = pd.read_csv(''data/AMC_model_input.csv'', nrows=5); print(''Verfügbare Spalten:''); print([c for c in df.columns if not c.startswith(''Unnamed'')][:30])\")",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/comprehensive_features.py)",
+      "Bash(timeout 60 sleep:*)"
     ],
     "deny": [],
     "ask": []
