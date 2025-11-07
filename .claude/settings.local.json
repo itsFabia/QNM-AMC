@@ -1,9 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python -c \"import pandas as pd; df = pd.read_csv(''data/AMC_model_input.csv'', nrows=5); print(''Verfügbare Spalten:''); print([c for c in df.columns if not c.startswith(''Unnamed'')][:30])\")",
-      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/comprehensive_features.py)",
-      "Bash(timeout 60 sleep:*)"
+      "Bash(timeout 20 sleep:*)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run:*)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/model_eval_lgbm.py --parquet-dir reports/scaled_selected --target Excess_5d_fwd --outdir reports/eval_selected --ranker --topk 10 --cost-bps 10.0)",
+      "Bash(timeout 120 sleep:*)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/feature_selection.py --parquet-dir reports/scaled --input-csv data/AMC_model_input_reduced.csv --output-csv data/AMC_model_input_top15.csv --top-k 15 --n-splits 10 --target Excess_5d_fwd)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/feature_selection.py --parquet-dir reports/scaled --input-csv data/AMC_model_input_reduced.csv --output-csv data/AMC_model_input_top10.csv --top-k 10 --n-splits 10 --target Excess_5d_fwd)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/model_eval_lgbm.py --parquet-dir reports/scaled_top20 --target Excess_5d_fwd --outdir reports/eval_top20 --ranker --topk 10 --cost-bps 10.0)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/scale_and_save.py --csv data/AMC_model_input_top15.csv --splits-log reports/splits_log.csv --outdir reports/scaled_top15 --target Excess_5d_fwd --winsorize --winsorize-sigma 3.0 --winsorize-patterns \"__logdiff1$,__chgstd20$\" --reduce-features --corr-threshold 0.95)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/scale_and_save.py --csv data/AMC_model_input_top10.csv --splits-log reports/splits_log.csv --outdir reports/scaled_top10 --target Excess_5d_fwd --winsorize --winsorize-sigma 3.0 --winsorize-patterns \"__logdiff1$,__chgstd20$\" --reduce-features --corr-threshold 0.95)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/model_eval_lgbm.py --parquet-dir reports/scaled_top10 --target Excess_5d_fwd --outdir reports/eval_top10 --ranker --topk 10 --cost-bps 10.0)",
+      "Bash(timeout 30 sleep:*)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python scripts/bootstrap_sharpe_ci.py --eval-dir reports/eval_top10 --n-bootstrap 10000 --confidence 0.95)",
+      "Bash(\"C:\\Users\\holze\\miniconda3\\Scripts\\conda.exe\" run -n base python -c \"import pandas as pd; df = pd.read_csv(''data/AMC_model_input_top10.csv'', nrows=1); cols = [c for c in df.columns if c not in [''Date'', ''Ticker'', ''Price'', ''Volume'', ''Ret_5d_fwd'', ''Bench_Ret_5d_fwd'', ''Excess_5d_fwd'', ''Excess_ret'', ''Return_raw'', ''Bench_Return_raw'']]; print(''Top-10 Features:''); [print(f''{i+1:2d}. {col}'') for i, col in enumerate(cols)]\")"
     ],
     "deny": [],
     "ask": []
